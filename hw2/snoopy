@@ -1,0 +1,50 @@
+#!/bin/bash
+
+echo
+printf "    USERID,        NAME,    PHONE, TTY,    WHAT\n" >> temp.txt
+
+if (test "$1" = "all")
+then
+  list=`grep -w "BADNEWSBEARS23" /etc/passwd | cut -d":" -f1 | sort -u`
+fi
+
+if (test "$1" != "all") && (test $# -gt 0)
+then
+  list=$*
+fi
+
+if (test $# -eq 0)
+then
+  #list1=`grep -w "BADNEWSBEARS23" /etc/passwd | cut -d":" -f1 | sort -u`
+  list=`who | cut -d" " -f1 | sort -u`
+fi   
+	
+for user in $list
+do
+   #echo "processing: " $user
+   name=`grep $user /etc/passwd | cut -d":" -f5 | cut -d"," -f1`
+   phone=`grep $user /etc/passwd | cut -d":" -f5 | cut -d"," -f4`
+   office=`grep $user /etc/passwd | cut -d":" -f5 | cut -d"," -f2`
+
+   tty=`w $user -h -s | tr -s " " | cut -d" " -f2`
+   if test -z "$tty"
+   then
+      tty='NOT ON'
+   fi  
+
+   what=`w | grep $user | cut -c65-` 
+   if (test -z "$what") || (test "$tty" = "NOT ON") 
+   then
+      what='-'
+   fi
+   
+   if (test "$office" = "BADNEWSBEARS23")
+   then
+      printf "$user,$name,$phone,$tty,$what\n" >> temp.txt
+   fi
+done
+
+cat temp.txt | column -t -s","
+rm temp.txt
+echo
+
