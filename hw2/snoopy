@@ -2,24 +2,25 @@
 echo #extra spacing
 printf "    USERID,        NAME,    PHONE, TTY,    WHAT\n" >> temp.txt
 
+# snoopy should get currently logged in users as seen in the w/who commands
+if [ $# -eq 0 ]
+then
+  list=`who | cut -d' ' -f1 | sort -u`
+fi
+
 # snoopy all should get everyone in the class
 if [ "$1" == "all" ]
 then
   list=`grep BADNEWSBEARS23 /etc/passwd | cut -d":" -f1 | sort -u`
 fi
 
-# snoopy should get currently logged in users as seen in the w/who commands
+# snoopy followed by a list of users should get only the userids specified
 if [ "$1" != "all" ] && [ $# -gt 0 ]
 then
   list=$*
 fi
 
-# snoopy followed by a list of users should get only the userids specified 
-if [ $# -eq 0 ]
-then
-  list=`who | cut -d' ' -f1 | sort -u`
-fi   
-	
+# iterate over the list of users   	
 for user in $list
 do
    name=`grep $user /etc/passwd | cut -d':' -f5 | cut -d',' -f1`
@@ -44,5 +45,7 @@ done
 cat temp.txt | column -t -s',' #display text file in a tabulated manner
 rm temp.txt
 echo #extra spacing
+
+
 
 
