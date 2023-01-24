@@ -1,0 +1,69 @@
+     Command                                  	 Description  	 
+
+eggshow <filename>	Display named file on the screen one page at a time with the 
+                        capability to scroll up or down with the arrow keys.
+
+                        <filename> is a mandatory argument which should be the name of the 
+                        file to be displayed.
+                         
+                        If multiple arguments (file names) are given, navigation between files
+                        with ':n' for next and ':p' for previous files is possible.
+
+                        Exit the file using 'q'.
+
+
+egghead <userid>	Print specified user’s full name and office phone number on the screen.
+                        
+                        <userid> is a mandatory argument which should be the userid of the
+                        the user whose name and office phone number is to be displayed.
+                        
+                        A line with the user's full name and office phone number is displayed in
+                        the format below:
+                        Full Name	:	phone number
+
+                        If multiple arguments (userids) are given, each user's name and phone
+                        number will be displayed in separate lines.
+                        
+                        Non-existent or wrong userids will not display a line. 
+                        
+
+eggers	                Displays full names of those currently logged in (only their name).
+                        
+                        Extra arguments are unnecessary and ignored if given.
+
+
+eggcrate	        Display contents of current directory.
+
+                        Extra arguments are unnecessary and ignored if given.
+
+
+egghelp	                Display this help page.
+
+                        The syntax for the available commands is on the left column. 
+                        The commands may be followed with arguments provided by 
+                        the user as shown in the <>.
+
+
+custard <filename>	Start editing a file using vim editor.
+                        (All arguments and rules of the vim editor is applicable.)
+
+
+snoopy  	        Run the 'snoopy' command to display information about users in 
+                        a tabulated manner.
+                        The fields are  userID, name, phone(home), tty, what.  
+  
+    snoopy              Get details of currently logged in users.
+                                  
+    snoopy all          Get details of all users in the class.
+   
+    snoopy <userid>     Get details of specified user(s).
+                        <userid> may be a single user or a list of users.
+
+
+deviled                 Does something interesting.
+                        Displays a colorful pyramid.
+
+
+eggdrop	                Exit the egg shell.
+
+

@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# egg shell -  a custom shell for egg-heads
+echo Welcome to the egg shell!
+
+# Read commands until user types "eggdrop"
+while read -p "Eggs> " cmd args
+do 
+  case $cmd in
+   
+    # Display named file one page at a time with scrollability
+    eggshow)
+      if [ -z "$args" ]
+      then 
+        echo No filename provided!
+      else
+        less -F $args
+      fi
+      ;;
+
+    # Display user’s full name and office phone number
+    egghead)
+      for user in $args
+      do
+        name=`grep $user /etc/passwd | cut -d':' -f5 | cut -d',' -f1 | tr '\n' ' '`  
+        offphone=`grep $user /etc/passwd | cut -d':' -f5 | cut -d',' -f3`
+        if [ ! -z "$name" ]
+        then
+          echo -e $name"\t:\t"$offphone
+        fi              
+      done
+      ;;
+    
+    # Display only full names of those currently logged in    
+    eggers)
+      loggedusers=`who | cut -d' ' -f1 | sort -u`
+      echo Currently logged in users: 
+      for user in $loggedusers
+      do
+        grep $user /etc/passwd | cut -d':' -f5 | cut -d',' -f1 | tr '\n' ' '
+        echo 
+      done
+      ;;
+    
+    # Display contents of current directory
+    eggcrate)
+      echo Contents of this directory: 
+      ls
+      ;;
+
+    # Display help 
+    egghelp)
+      cat help.txt
+      ;;
+
+    # Edit file using vim editor
+    custard)
+      # The egg script itself should not be accessible from the egg shell!
+      except=`echo $args | grep -w egg`      
+      if [ -z "$args" ]
+      then
+        echo No filename provided!
+      elif [ ! -z "$except" ]
+      then
+        echo Access to core file denied!
+      else
+        vi $args
+      fi
+      ;;
+  
+    # The "snoopy" command from hw2
+    snoopy)
+      ./snoopy $args 
+      ;;
+    
+    # Escape to a real bash shell
+    ostrich)
+      bash
+      ;;
+
+    # The "deviled" command
+    deviled)
+      echo "A seven leveled pyramid with the colors of the rainbow (VIBGYOR)"
+      sleep 1
+      echo -e "\e[38;5;129m        * \e[0m" #violet
+      sleep 1
+      echo -e "\e[38;5;61m       * * \e[0m" #indigo
+      sleep 1
+      echo -e "\e[38;5;12m      * * * \e[0m" #blue
+      sleep 1
+      echo -e "\e[38;5;118m     * * * * \e[0m" #green
+      sleep 1
+      echo -e "\e[38;5;220m    * * * * * \e[0m" #yellow
+      sleep 1
+      echo -e "\e[38;5;208m   * * * * * * \e[0m" #orange
+      sleep 1 
+      echo -e "\e[31m  * * * * * * * \e[0m" #red
+      ;;    
+
+    # Exit the egg shell
+    eggdrop)
+      echo Exiting egg shell...
+      break
+      ;;
+
+    # Any other command is invalid.
+    *)
+      echo "Invalid command! Type 'egghelp' to display available commands."
+      ;;
+
+  esac
+done
+
+
+
+

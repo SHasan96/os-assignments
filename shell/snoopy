@@ -1,0 +1,51 @@
+#!/bin/bash
+echo #extra spacing
+printf "    USERID,        NAME,    PHONE, TTY,    WHAT\n" >> temp.txt
+
+# snoopy should get currently logged in users as seen in the w/who commands
+if [ $# -eq 0 ]
+then
+  list=`who | cut -d' ' -f1 | sort -u`
+fi
+
+# snoopy all should get everyone in the class
+if [ "$1" == "all" ]
+then
+  list=`grep BADNEWSBEARS23 /etc/passwd | cut -d":" -f1 | sort -u`
+fi
+
+# snoopy followed by a list of users should get only the userids specified
+if [ "$1" != "all" ] && [ $# -gt 0 ]
+then
+  list=$*
+fi
+
+# iterate over the list of users   	
+for user in $list
+do
+   name=`grep $user /etc/passwd | cut -d':' -f5 | cut -d',' -f1`
+   phone=`grep $user /etc/passwd | cut -d':' -f5 | cut -d',' -f4`
+
+   tty=`w $user -h -s | tr -s ' ' | cut -d' ' -f2`
+   if (test -z "$tty")
+   then
+      tty='NOT ON'
+   fi  
+
+   what=`w $user -h | cut -c65-` #what status of current user 
+   if (test -z "$what") || [ "$tty" = "NOT ON" ] 
+   then
+      what='-'
+   fi
+  
+   printf "$user,$name,$phone,$tty,$what" | tr '\n' ' ' >> temp.txt #every user must have one line (root user was problematic)
+   printf "\n" >> temp.txt
+done
+
+cat temp.txt | column -t -s',' #display text file in a tabulated manner
+rm temp.txt
+echo #extra spacing
+
+
+
+
