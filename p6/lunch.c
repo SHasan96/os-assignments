@@ -19,13 +19,13 @@
 #define EATING   2
 #define DEAD     3 
 
-//semaphores
+// Semaphores
 int semid, mutex;
 
 // Shared memory variables
 int shmid, *state;
 
-// Variable to record a starting time
+// Variable to record the starting time
 time_t start_time;
 
 //prototypes
@@ -107,6 +107,9 @@ int main() {
 void philosopher(int i) {
     while (difftime(time(NULL), start_time) < 60) { // repeat until time is 60 seconds or more
         think();
+        if (difftime(time(NULL), start_time) >= 60) {
+            break;
+        }
         take_chopsticks(i);
         eat();
         put_chopsticks(i);           
@@ -180,7 +183,7 @@ void print_states() {
             state[3] == DEAD && state[4] == DEAD) {
             break;
         }
-        sleep(1);
+        sleep(1);  // delay 1 sec
         t++;
     }
 }
