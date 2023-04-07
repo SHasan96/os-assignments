@@ -3,6 +3,9 @@
 // Date: 04/01/23
 // Bob’s Bank - Synchronization w/Sems
 
+// **README -- When compiling we need to link the math library. 
+//             cc bank.c -lm
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -35,7 +38,7 @@ int main(int argc, char** argv) {
   
     // The cases are ordered as given in the assignment instructions
     switch (opt) {
-        case 0: // Start things up, initialize shared memory
+        case 0: // Start things up, initialize shared memory and semaphore
             initBalance();
             break;
         case 1: // **This is where the simulation happens**
@@ -43,9 +46,9 @@ int main(int argc, char** argv) {
 
             int n = atoi(argv[1]); // loop counter for withdrawals/deposits
  
-            // Spawn the processes (parents)
+            // Spawn the processes (parents) (original process counts as one) 
             int i;
-            for (i=0; i<16; i++) {
+            for (i=0; i<15; i++) {
                 if (fork()) {
                     break;
                 }
@@ -63,10 +66,10 @@ int main(int argc, char** argv) {
                 p(0, mutex);
                 if (parent) {
                     BAL += amount;
-                    printf("%d + %d = %d(parent-%d)\n", oldBal, amount, BAL, myid);
+                    printf("%d + %d = %d\n", oldBal, amount, BAL);
                 } else {
                     BAL -= amount;
-                    printf("\t\t%d - %d = %d(child-%d)\n", oldBal, amount, BAL, myid);
+                    printf("\t\t%d - %d = %d\n", oldBal, amount, BAL);
                 }
                 v(0, mutex);
             }
@@ -100,7 +103,7 @@ void initBalance() {
             exit(1);
         }
         BAL = 1000; // Initialize balance to 1000
-        // Write shmid into a file
+        // Write shmid into a file (we assume that this file will not be tampered with externally)
         FILE *fp;
         fp = fopen("info.txt", "w"); 
         if (fp == NULL) {
@@ -116,9 +119,7 @@ void initBalance() {
             exit(1);
         }
         fprintf(fp, "%d\n", mutex);
-        fclose(fp);
-        //printf("Balance is %d\n", BAL);
-        
+        fclose(fp); 
     } else {
         printf("The system is already ready for simulation.\n");
     }
@@ -181,17 +182,15 @@ int parseArgs(int argc, char** argv) {
     char *ptr;
     long n = strtol(argv[1], &ptr, 10);
     if (*ptr != '\0' || ptr == argv[1]) {
-        //printf("%s is not a valid integer\n", argv[1]);
-        return -1;
+        return -1; // was not an integer
     } else {
         if (n<1 || n>100) {
             printf("Integer argument should be within 1-100.\n");
             exit(1);
         }
         readResources(); // read the shared memory to check if its ready before proceeding
-        return 1;
+        return 1; // valid integer
     }
-    //printf("%s is a valid integer\n", argv[1]);
     return -1;
 }
 
