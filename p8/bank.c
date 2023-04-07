@@ -141,7 +141,8 @@ void die() {
    if ((semctl(mutex, 0, IPC_RMID, 0)) == -1) {
        printf("Error in removing semaphore.\n");
    }
-   system("rm info.txt"); 
+   system("rm info.txt");
+   printf("Shutting down...\n"); 
    exit(0);   
 }
 
