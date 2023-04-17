@@ -134,6 +134,9 @@ void showBalance() {
 // Clean up shared resources and exit
 void die() {
    readResources();
+   if (shmdt(shmem) == -1 ) {
+        printf("Error detaching shmem.\n");
+   }
    if ((shmctl(shmid, IPC_RMID, NULL)) == -1) {
        printf("Error removing shmem.\n");
        exit(1);
