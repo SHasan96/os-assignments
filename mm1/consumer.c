@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
                     }
                 }       
                 sleep(1);
-                if (!isQueueEmpty()) displayProcList();  // display procs in non-empty array                               
+                if (!isQueueEmpty() && !END) displayProcList();  // display procs in non-empty array                               
                 v(0, displayer); // let displayer go now
             }
             break;
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
                         }
                     }                    
                 }               
-                if (!isQueueEmpty()) displayRam(DIMS.rows, DIMS.cols, ramArr); // display updated ram
+                if (!isQueueEmpty() && !END) displayRam(DIMS.rows, DIMS.cols, ramArr); // display updated ram
                 if(END) break;
                 v(0, manager); // back to manager
             }
@@ -234,7 +234,6 @@ int main(int argc, char** argv) {
         clearSem(empty);
         // Remove file
         system("rm resources.txt");
-        printf("File deleted\n");
     }
     return 0;    
 }
@@ -445,7 +444,7 @@ void remReq(reqRes_t req) {
 bool isQueueEmpty() {
    int i=0;
    for(i=0; i<26; i++) {
-       if(q[i].pid != -1) {
+       if(q[i].pid != -1 && q[i].time>0) {
            return false;
        }
    }

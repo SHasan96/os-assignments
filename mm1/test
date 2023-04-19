@@ -6,7 +6,7 @@ cc producer.c -o y
 cc shutdown.c -o z
 sleep 0.5
 
-./x  5  10 5&
+./x  6  10 26&
 sleep 0.5 # allow the consumer to be ready
 ./y  5  5&
 ./y  2  4&
