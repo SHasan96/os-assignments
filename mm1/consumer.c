@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
         printf("Failed to get semaphore.\n");
         exit(1);
     }
-    semctl(manager, 0, SETVAL, 1);
+    semctl(manager, 0, SETVAL, 1); // goes 1st, set val as 1
 
     // Another semaphore for the consumer
     int displayer = semget (IPC_PRIVATE, 1, 0777);
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
         printf("Failed to get semaphore.\n");
         exit(1);
     }
-    semctl(displayer, 0, SETVAL, 0);
+    semctl(displayer, 0, SETVAL, 0); // goes after manager, set val as 0
 
     // Fork off process to do different tasks
     int i;
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
   
     // Do different tasks based on myId
     switch(myId) { 
-        case(SYNCHRONIZER): { // working i guess
+        case(SYNCHRONIZER): { 
             int tagger = 0;
             while(!END) {
                 p(0, full);
@@ -146,74 +146,69 @@ int main(int argc, char** argv) {
             break;
         }        
         case(MANAGER): {
-            // management tasks
-            int skip = 0;
+            sleep(1); // give a second for synchronizer to start filling bounded buffer
             while(!END) {
                 p(0, manager); // start before displayer
                 if(END) break;
-                if (!isQueueEmpty() && skip>1) displayProcList();  // display procs in non-empty array  
+                // For procs in RAM decrement time and set inRAM to false if time becomes 0
+                // Should do nothing in 1st iteration because inRam is initially false 
                 int i;
                 for (i=0; i<26; i++) {
                     if (q[i].inRam) { // if proc in RAM decrement time
                         q[i].time--;
-                        if (q[i].pid != -1  && q[i].time<=0) {
-                             q[i].inRam = false;
+                        if (q[i].time<=0) {
+                            q[i].inRam = false;
+                            v(0, q[i].semid);
                         }
                     }
-                }
-                skip++;                             
+                }       
+                sleep(1);
+                if (!isQueueEmpty()) displayProcList();  // display procs in non-empty array                               
                 v(0, displayer); // let displayer go now
             }
-            wait();
             break;
         }
         case(DISPLAYER): {
             char ramArr[DIMS.rows][DIMS.cols];
             int i, j;
-
             for (i = 0; i < DIMS.rows; i++) {
                 for (j = 0; j < DIMS.cols; j++) {
                     ramArr[i][j] = '.';
                 }
             }
-            
-            int skip = 0;         
+                
             while(!END) {
                 p(0, displayer); // starts after manager
-                if (END) break;
+                // Find empty slot for procs not in RAM yet
                 int k;
-                freeSlot_t slot;
                 for(k=0; k<26; k++) {
-                    if(q[k].pid != -1 && !q[k].inRam && q[k].time>0) {
-                        slot = findFirstAvail(DIMS.rows, DIMS.cols, ramArr, q[k].blocks);   
-                        if (slot.row != -1) { // if an empty slot was found for a proc not in ram
-                            q[k].inRam = true;
-                            fillRam(DIMS.rows, DIMS.cols, ramArr, q[k].tag, q[k].blocks, slot);                      
-                        }                        
-                    }
-                }
-
-                if (!isQueueEmpty() && skip>1) displayRam(DIMS.rows, DIMS.cols, ramArr); // display updated ram
-                // Update RAM for next display
-                for(k=0; k<26; k++) {
+                    // For procs not inRAM but time requirement is fulfilled
+                    // Should do nothing for 1st iteration because no process got time in RAM
                     if (q[k].pid != -1 && !q[k].inRam && q[k].time<=0) { // if a proc met its time requirement
-                        v(0, q[k].semid);
-                        clearFromRam(DIMS.rows, DIMS.cols, ramArr, q[k].tag);
+                        clearFromRam(DIMS.rows, DIMS.cols, ramArr, q[k].tag); 
                         remReq(q[k]);
                     }
-                }
-                skip++;
-                sleep(1);
-                if (END) break;
+                    // For procs not inRAM with time requirement not met
+                    if(q[k].pid != -1 && !q[k].inRam && q[k].time>0) {
+                        freeSlot_t slot = findFirstAvail(DIMS.rows, DIMS.cols, ramArr, q[k].blocks);
+                        if (slot.row != -1) { // if an empty slot was found for a proc not in ram
+                            q[k].inRam = true;
+                            //printf("Slot found at (%d,%d) for %c\n", slot.row, slot.col, q[k].tag); 
+                            fillRam(DIMS.rows, DIMS.cols, ramArr, q[k].tag, q[k].blocks, slot);
+                        }
+                    }                    
+                }               
+                if (!isQueueEmpty()) displayRam(DIMS.rows, DIMS.cols, ramArr); // display updated ram
+                if(END) break;
                 v(0, manager); // back to manager
             }
-            v(0, manager);                                  
+            v(0, manager);                                 
             break;
         }            
         default:
             break;
     }
-    
+  
     // The original process will clear things up
     wait();
     if (myId == ORIGINAL && END) { 
@@ -239,6 +234,7 @@ int main(int argc, char** argv) {
         clearSem(empty);
         // Remove file
         system("rm resources.txt");
+        printf("File deleted\n");
     }
     return 0;    
 }
@@ -380,7 +376,7 @@ void initSems(int bufsize) {
         exit(1);
     }
     semctl(empty, 0, SETVAL, bufsize); // empty = buffer size
-    
+   
     writeResourceInfo();
 }
 
@@ -403,7 +399,7 @@ void writeResourceInfo() {
     fprintf(fp, "%d\n", mutex);     // Mutex sem
     fprintf(fp, "%d\n", full);      // Full sem
     fprintf(fp, "%d\n", empty);     // Empty sem
-
+   
     fclose(fp);
 }
 
@@ -546,8 +542,8 @@ void displayProcList() {
     int i;
     printf("\nID thePID Size Sec\n");
     for(i=0; i<26; i++) {
-        if(q[i].pid != -1)
-        displayReq(q[i]);
+        if(q[i].pid != -1 && q[i].time>0) // don't show if time requirement is met
+            displayReq(q[i]);
     }
 }
 

@@ -142,7 +142,7 @@ void readResources() {
     fscanf(fp, "%d\n", &mutex);
     fscanf(fp, "%d\n", &full);
     fscanf(fp, "%d\n", &empty);
-    
+  
     fclose(fp);
 }
 

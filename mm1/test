@@ -1,4 +1,6 @@
 #!/bin/bash
+clear
+clear
 cc consumer.c -o x
 cc producer.c -o y
 cc shutdown.c -o z
@@ -13,7 +15,7 @@ sleep 0.5 # allow the consumer to be ready
 ./y 20  2&
 ./y  2  1&
 ./y  1  4&
-sleep 2
+#sleep 2
 ./y  2  3&
 ./y  6  2&
 ./y  8  5&
@@ -23,9 +25,9 @@ sleep 2
 ./y  6  4&
 ./y  9  5&
 ./y 15 10&
-sleep 1
 ./y  7  8&
-sleep 30 # time you want to run the simulation before ending
+sleep 20 # time you want to run the simulation before ending
 ./z
 
-# Note that when time turns to zero we do not display that process/request on the list, but a message saying that it was completed is displayed
+# Note that when time turns to zero we do not display that process/request on the list, but a message saying that it was completed is displayed before
+# the next list.
